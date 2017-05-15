@@ -11,17 +11,18 @@ config = {
 
 
 def main():
-    ws = websocket.create_connection('wss://metasmoke.erwaysoftware.com/cable')
-    ws.send(json.dumps({
-        'identifier': json.dumps({
-            'channel': 'ApiChannel',
-            'key': config['ms_api_key']
-        }),
-        'command': 'subscribe'
-    }))
+    ws = open_websocket()
 
     while True:
-        data = json.loads(ws.recv())
+        try:
+            data = json.loads(ws.recv())
+        except Exception as ex:
+            if isinstance(ex, websocket._exceptions.WebSocketConnectionClosedException):
+                ws = open_websocket()
+                continue
+
+            print(ex)
+        
         if 'type' in data and data['type'] == 'ping':
             print('pong')
             continue
@@ -41,6 +42,18 @@ def main():
                                                                                           posts_scanned)
         response = requests.get(url)
         print(response.status_code, url)
+
+
+def open_websocket():
+    ws = websocket.create_connection('wss://metasmoke.erwaysoftware.com/cable')
+    ws.send(json.dumps({
+        'identifier': json.dumps({
+            'channel': 'ApiChannel',
+            'key': config['ms_api_key']
+        }),
+        'command': 'subscribe'
+    }))
+    return ws
 
 
 if __name__ == '__main__':
