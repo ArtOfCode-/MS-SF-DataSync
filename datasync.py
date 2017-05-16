@@ -22,7 +22,7 @@ def main():
                 continue
 
             print(ex)
-        
+
         if 'type' in data and data['type'] == 'ping':
             print('pong')
             continue
@@ -37,11 +37,14 @@ def main():
             continue
 
         posts_scanned = message['statistic']['posts_scanned']
-        url = 'https://data.sparkfun.com/input/{}?private_key={}&posts_scanned={}'.format(config['sf_stream_key'],
-                                                                                          config['sf_stream_secret'],
-                                                                                          posts_scanned)
-        response = requests.get(url)
-        print(response.status_code, url)
+        try:
+            url = 'https://data.sparkfun.com/input/{}?private_key={}&posts_scanned={}'.format(config['sf_stream_key'],
+                                                                                              config['sf_stream_secret'],
+                                                                                              posts_scanned)
+            response = requests.get(url)
+            print(response.status_code, url)
+        except (requests.ConnectionError, requests.HTTPError) as ex:
+            print("request error:", ex)
 
 
 def open_websocket():
